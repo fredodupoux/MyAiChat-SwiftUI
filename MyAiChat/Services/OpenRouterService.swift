@@ -2,8 +2,7 @@ import Foundation
 
 class OpenRouterService: ObservableObject {
     private let baseURL = "https://openrouter.ai/api/v1"
-    private var apiKey: String = "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"
-//    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
+    private var apiKey: String = ""
     
     func setAPIKey(_ key: String) {
         self.apiKey = key
