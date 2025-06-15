@@ -52,3 +52,7 @@ struct ChatHistoryView: View {
         }
     }
 }
+
+#Preview {
+    ChatHistoryView()
+}

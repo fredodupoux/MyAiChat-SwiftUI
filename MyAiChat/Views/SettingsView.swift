@@ -7,6 +7,7 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationView {
+            
             Form {
                 Section(header: Text("API Configuration")) {
                     SecureField("OpenRouter API Key", text: $tempApiKey)
@@ -39,4 +40,8 @@ struct SettingsView: View {
             }
         }
     }
+}
+
+#Preview {
+    SettingsView()
 }

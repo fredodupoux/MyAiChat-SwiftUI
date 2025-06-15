@@ -29,35 +29,29 @@ struct MessageBubble: View {
     /// The content view for the message bubble
     /// Contains the message text and timestamp
     private var messageContent: some View {
-            VStack(alignment: .leading, spacing: 4) {
-                // Message content text
-                Text(message.content)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                // Timestamp displayed below the message
-                Text(message.timestamp, style: .time)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 6)}
-            // Limit maximum width of message bubbles for better presentation
-            .frame(maxWidth: 280, alignment: .leading)
-            
+        VStack(alignment: .leading, spacing: 4) {
+            // Message content text
+            Text(message.content)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+            // Timestamp displayed below the message
+            Text(message.timestamp, style: .time)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.horizontal, 12)
+            .padding(.bottom, 6)}
+        // Limit maximum width of message bubbles for better presentation
+        .frame(maxWidth: 280, alignment: .leading)
+        
     }
-    
-    
-    /// Preview provider for seeing the message bubble in different states
-    struct MessageBubble_Previews: PreviewProvider {
-        static var previews: some View {
-            Group {
-                // Example of a user message
-                MessageBubble(message: Message(content: "Hello, how are you?", isFromUser: true))
-                // Example of an AI assistant message
-                MessageBubble(message: Message(content: "I'm doing great, thanks for asking!", isFromUser: false))
-            }
-            // Commented out preview layout setting
-            .previewLayout(.sizeThatFits)
-            .padding()
-        }
+}
+/// Preview provider for the MessageBubble view
+
+#Preview {
+    Group {
+        // Example of a user message
+        MessageBubble(message: Message(content: "Hello, how are you?", isFromUser: true))
+        // Example of an AI assistant message
+        MessageBubble(message: Message(content: "I'm doing great, thanks for asking!", isFromUser: false))
     }
 }
