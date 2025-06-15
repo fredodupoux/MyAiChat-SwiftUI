@@ -18,9 +18,8 @@ struct MessageBubble: View {
             } else {
                 // AI messages are aligned to the left with light gray background
                 messageContent
-                    .background(Color.gray, in: RoundedRectangle(cornerRadius: 15))
-                    .shadow(radius: 1)
-                    .foregroundColor(.white)
+                    
+                    .foregroundColor(.black)
                 Spacer()
             }
         }
@@ -40,9 +39,7 @@ struct MessageBubble: View {
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 12)
             .padding(.bottom, 6)}
-        // Limit maximum width of message bubbles for better presentation
-        .frame(maxWidth: 280, alignment: .leading)
-        
+
     }
 }
 /// Preview provider for the MessageBubble view

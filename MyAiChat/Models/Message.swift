@@ -1,6 +1,6 @@
 import Foundation
 
-struct Message: Identifiable, Codable {
+struct Message: Identifiable, Codable, Equatable {
     let id = UUID()
     let content: String
     let isFromUser: Bool
