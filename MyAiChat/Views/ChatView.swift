@@ -33,7 +33,7 @@ struct ChatView: View {
             
             // Input Area - text field and send button
             HStack {
-                TextField("Type a message...", text: $inputText)
+                TextField("Type or ask anything...", text: $inputText)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 
                 Button(action: sendMessage) {

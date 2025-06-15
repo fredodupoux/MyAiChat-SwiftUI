@@ -193,7 +193,6 @@ private var apiKey: String = ""
 # Tomorrow's Preview 🔍
 
 We'll add:
-- Chat history
 - Tab navigation
 - Final polish
 - Complete testing

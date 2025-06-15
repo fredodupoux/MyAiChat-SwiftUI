@@ -43,17 +43,12 @@ struct Message {
 
 ---
 
-# Our App's Models
+# Our App's Model
 
 ## Message Model
 - Content: What was said
 - Who sent it (user or AI)
 - When it was sent
-
-## Chat Model
-- Collection of messages
-- Title of conversation
-- Creation date
 
 ---
 

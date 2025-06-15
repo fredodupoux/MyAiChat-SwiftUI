@@ -16,12 +16,6 @@ struct ContentView: View {
                     Text("Chat")
                 }
             
-            ChatHistoryView()
-                .tabItem {
-                    Image(systemName: "clock")
-                    Text("History")
-                }
-            
             SettingsView()
                 .tabItem {
                     Image(systemName: "gear")

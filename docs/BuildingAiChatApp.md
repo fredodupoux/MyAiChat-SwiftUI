@@ -16,11 +16,9 @@ graph TD
     A[MyAiChat App] --> B[Models]
     A --> C[Views]
     B --> E[Message Model]
-    B --> F[Chat Model]
     C --> G[ChatView]
     C --> H[MessageBubble]
     C --> I[SettingsView]
-    C --> J[ChatHistoryView]
 ```
 
 ## Day 1: Foundation and Basic Chat Interface
@@ -31,7 +29,7 @@ graph TD
    - Choose "App" template with SwiftUI interface
    - Name it "MyAiChat"
 
-2. Create Basic Models
+2. Create Message Model
    ```swift
    // Message.swift
    import Foundation
@@ -46,22 +44,6 @@ graph TD
            self.content = content
            self.isFromUser = isFromUser
            self.timestamp = Date()
-       }
-   }
-
-   // Chat.swift
-   import Foundation
-
-   struct Chat: Identifiable, Codable {
-       let id = UUID()
-       let title: String
-       var messages: [Message]
-       let createdAt: Date
-       
-       init(title: String) {
-           self.title = title
-           self.messages = []
-           self.createdAt = Date()
        }
    }
    ```
@@ -293,61 +275,16 @@ graph TD
    }
    ```
 
-## Day 3: Polish and Additional Features
+## Day 3: Polish and Final Testing
 
-### Morning Session: Chat History
-1. Implement ChatHistoryView
-   ```swift
-   import SwiftUI
+### Morning Session: Final Testing and Debugging
+1. Test all features thoroughly
+    - Send and receive messages
+    - Save and load API key
+    - Handle errors appropriately
+    - Check UI responsiveness
 
-   struct ChatHistoryView: View {
-       @State private var chats: [Chat] = []
-       
-       var body: some View {
-           NavigationView {
-               List {
-                   ForEach(chats) { chat in
-                       VStack(alignment: .leading, spacing: 4) {
-                           Text(chat.title)
-                               .font(.headline)
-                           Text("\(chat.messages.count) messages")
-                               .font(.caption)
-                           Text(chat.createdAt, style: .date)
-                               .font(.caption2)
-                       }
-                       .padding(.vertical, 2)
-                   }
-                   .onDelete(perform: deleteChats)
-               }
-               .navigationTitle("Chat History")
-               .toolbar {
-                   EditButton()
-               }
-               .onAppear { loadChats() }
-           }
-       }
-       
-       private func loadChats() {
-           if let data = UserDefaults.standard.data(forKey: "saved_chats"),
-              let savedChats = try? JSONDecoder().decode([Chat].self, from: data) {
-               chats = savedChats
-           }
-       }
-       
-       private func deleteChats(offsets: IndexSet) {
-           chats.remove(atOffsets: offsets)
-           saveChats()
-       }
-       
-       private func saveChats() {
-           if let data = try? JSONEncoder().encode(chats) {
-               UserDefaults.standard.set(data, forKey: "saved_chats")
-           }
-       }
-   }
-   ```
-
-2. Create Main App Structure
+2. Update Main App Structure
    ```swift
    import SwiftUI
 
@@ -360,12 +297,6 @@ graph TD
                        Text("Chat")
                    }
                
-               ChatHistoryView()
-                   .tabItem {
-                       Image(systemName: "clock")
-                       Text("History")
-                   }
-               
                SettingsView()
                    .tabItem {
                        Image(systemName: "gear")
@@ -376,14 +307,8 @@ graph TD
    }
    ```
 
-### Afternoon Session: Testing and Polish
-1. Test all features:
-   - Send and receive messages
-   - Save and load API key
-   - Handle errors appropriately
-   - Check UI responsiveness
-
-2. Polish and debug:
+### Afternoon Session: Polish and Optimization
+1. Polish and debug:
    - Ensure smooth animations
    - Test error cases
    - Verify data persistence
