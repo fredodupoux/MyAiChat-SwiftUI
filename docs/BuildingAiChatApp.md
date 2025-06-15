@@ -155,15 +155,26 @@ graph TD
 2. Update ChatView with API Integration
    ```swift
    struct ChatView: View {
+       // Service to handle AI chat functionality
        @StateObject private var apiService = OpenRouterService()
+       
+       // Array to store all messages in the conversation
        @State private var messages: [Message] = []
+       
+       // Text entered by the user in the input field
        @State private var inputText = ""
+       
+       // Shows when we're waiting for AI response
        @State private var isLoading = false
+       
+       // Stores the API key persistently using UserDefaults
        @AppStorage("openrouter_api_key") private var apiKey: String = ""
        
        var body: some View {
            VStack {
+               // Scrollable area for messages
                ScrollView {
+                   // Load messages as they become visible
                    LazyVStack(spacing: 8) {
                        ForEach(messages) { message in
                            MessageBubble(message: message)
@@ -172,42 +183,60 @@ graph TD
                    .padding()
                }
                
+               // Message input area
                HStack {
+                   // Text field for user input
                    TextField("Type a message...", text: $inputText)
                        .textFieldStyle(RoundedBorderTextFieldStyle())
                    
+                   // Send button - changes color based on state
                    Button(action: sendMessage) {
                        Image(systemName: "paperplane.fill")
                            .foregroundColor(inputText.isEmpty || isLoading ? .gray : .blue)
                    }
+                   // Disable button when there's no text or while loading
                    .disabled(inputText.isEmpty || isLoading)
                }
                .padding()
            }
            .navigationTitle("Chat")
+           // Set the API key when the view appears
            .onAppear { apiService.setAPIKey(apiKey) }
        }
        
        private func sendMessage() {
-           guard !inputText.isEmpty else { return }
+           // Check if we have text to send
+           if inputText.isEmpty {
+               return
+           }
            
+           // Create and show the user's message
            let userMessage = Message(content: inputText, isFromUser: true)
            messages.append(userMessage)
            
+           // Store message text and clear input field
            let messageText = inputText
            inputText = ""
+           
+           // Show loading indicator while waiting for AI
            isLoading = true
            
+           // Create a new background task to send message to AI
            Task {
                do {
+                   // Send message to AI and wait for response
                    let response = try await apiService.sendMessage(messageText)
+                   
+                   // Create message from AI's response
                    let aiMessage = Message(content: response, isFromUser: false)
                    
+                   // Update the UI on the main thread
                    await MainActor.run {
                        messages.append(aiMessage)
                        isLoading = false
                    }
                } catch {
+                   // If there's an error, show it in the chat
                    await MainActor.run {
                        let errorMessage = Message(
                            content: "Error: \(error.localizedDescription)",
@@ -220,6 +249,7 @@ graph TD
            }
        }
    }
+   
    ```
 
 ### Afternoon Session: Settings View
