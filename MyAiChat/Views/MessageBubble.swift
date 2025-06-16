@@ -18,8 +18,8 @@ struct MessageBubble: View {
             } else {
                 // AI messages are aligned to the left with light gray background
                 messageContent
-                    
-                    .foregroundColor(.black)
+                // set to primary color for better contrast
+                    .foregroundColor(.primary)
                 Spacer()
             }
         }

@@ -6,6 +6,13 @@ import SwiftUI
 // - Text input and sending
 // - Keyboard management with gesture-based dismissal
 // - Auto-scrolling to new messages
+
+// Background gradient
+let homeBackground: [Color] = [
+        .backgroundTop,
+        .backgroundBottom
+]
+
 struct ChatView: View {
     // MARK: - Properties
     // Service for making API calls to OpenRouter
@@ -33,7 +40,22 @@ struct ChatView: View {
     
     // MARK: - Body
     var body: some View {
-        VStack {
+        ZStack {
+            // Background color for the chat view
+            LinearGradient(
+                    gradient: Gradient(colors: homeBackground),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .edgesIgnoringSafeArea(.all)
+            
+            // Main chat content
+            
+        VStack (alignment: .leading) {
+            // Title for the chat view
+            Text("My AI Chat")
+                .font(.largeTitle .bold())
+                .padding()
             // Messages area with ScrollViewReader for automatic scrolling to new messages
             ScrollViewReader { proxy in
                 ScrollView {
@@ -80,9 +102,7 @@ struct ChatView: View {
             }
             .padding()
         }
-        // Set navigation title
-        .navigationTitle("Chat")
-        
+    
         // Initialize API service with stored key when view appears
         .onAppear {
             apiService.setAPIKey(apiKey)
@@ -92,8 +112,8 @@ struct ChatView: View {
         .onChange(of: apiKey) { oldKey, newKey in
             apiService.setAPIKey(newKey)
         }
-    }
-    
+     }
+    } 
     // MARK: - Methods
     
     // Sends the user's message to the AI service and handles the response.

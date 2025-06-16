@@ -22,6 +22,7 @@ class OpenRouterService: ObservableObject {
         let requestBody = [
             "model": "google/gemini-2.0-flash-exp:free",
             "messages": [
+                ["role": "system", "content": "You are a helpful and encouraging AI tutor for young students. Always use simple, clear language that's easy to understand. Keep your explanations safe, positive, and age-appropriate. Never use markdown, formatting, tables in your responses. Always reply in correct gramar and plain text using simple paragraphs with proper punctuation occasionally use emojis. Break down complex topics into easy steps and encourage learning."],
                 ["role": "user", "content": message]
             ]
         ] as [String : Any]
