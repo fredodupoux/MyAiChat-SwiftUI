@@ -158,4 +158,4 @@ logs/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-MyAiChat/Services/.orio_
+*.orio_
