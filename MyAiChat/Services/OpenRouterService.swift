@@ -8,7 +8,7 @@ class OpenRouterService: ObservableObject {
         self.apiKey = key
     }
     
-    func sendMessage(_ message: String) async throws -> String {
+    func sendMessage(_ message: String, conversationHistory: [(content: String, isFromUser: Bool)] = []) async throws -> String {
         guard !apiKey.isEmpty else {
             throw APIError.noAPIKey
         }
@@ -19,12 +19,23 @@ class OpenRouterService: ObservableObject {
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
+        // Build messages array with conversation history
+        var messages: [[String: String]] = [
+            ["role": "system", "content": "You are a helpful and encouraging AI tutor for young students. Always use simple, clear language that's easy to understand. Keep your explanations safe, positive, and age-appropriate. Never use markdown, formatting, tables in your responses. Always reply in correct gramar and plain text using simple paragraphs with proper punctuation occasionally use emojis. Break down complex topics into easy steps and encourage learning."]
+        ]
+        
+        // Add conversation history
+        for msg in conversationHistory {
+            let role = msg.isFromUser ? "user" : "assistant"
+            messages.append(["role": role, "content": msg.content])
+        }
+        
+        // Add current message
+        messages.append(["role": "user", "content": message])
+        
         let requestBody = [
             "model": "google/gemini-2.0-flash-exp:free",
-            "messages": [
-                ["role": "system", "content": "You are a helpful and encouraging AI tutor for young students. Always use simple, clear language that's easy to understand. Keep your explanations safe, positive, and age-appropriate. Never use markdown, formatting, tables in your responses. Always reply in correct gramar and plain text using simple paragraphs with proper punctuation occasionally use emojis. Break down complex topics into easy steps and encourage learning."],
-                ["role": "user", "content": message]
-            ]
+            "messages": messages
         ] as [String : Any]
         
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)

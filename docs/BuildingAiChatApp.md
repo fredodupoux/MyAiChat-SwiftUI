@@ -1,12 +1,12 @@
 # Building an AI Chat App with SwiftUI
-## A 3-Day Coding Camp Guide
+## A 2-Day Coding Camp Guide
 
-This document outlines the step-by-step process of building a simple but functional AI chat application using SwiftUI and the OpenRouter API. The app will be built over three days, with each day focusing on specific components and concepts.
+This document outlines the step-by-step process of building a simple but functional AI chat application using SwiftUI and the OpenRouter API. The app will be built over two days, with each day focusing on specific components and concepts.
 
 ## Prerequisites
 - Basic understanding of Swift programming language
 - Xcode installed on your Mac
-- OpenRouter API Key (will be provided)
+- OpenRouter API key (will be provided)
 - OpenRouterService.swift file (will be provided)
 
 ## Project Overview
@@ -21,7 +21,7 @@ graph TD
     C --> I[SettingsView]
 ```
 
-## Day 1: Foundation and Basic Chat Interface
+## Day 1: Foundation and User Interface
 
 ### Morning Session: Project Setup and Models
 1. Create a new SwiftUI project
@@ -34,12 +34,21 @@ graph TD
    // Message.swift
    import Foundation
 
-   struct Message: Identifiable, Codable {
+   /// This view represents a single chat message.
+   struct Message: Identifiable, Codable, Equatable {
+       /// Unique identifier for the message.
        let id = UUID()
+       /// The text content of the message.
        let content: String
+       /// Indicates if the message was sent by the user.
        let isFromUser: Bool
+       /// The date and time when the message was created.
        let timestamp: Date
        
+       /// Initializes a new Message with the given content and sender flag.
+       /// - Parameters:
+       ///   - content: The text of the message.
+       ///   - isFromUser: True if the message is from the user, false otherwise.
        init(content: String, isFromUser: Bool) {
            self.content = content
            self.isFromUser = isFromUser
@@ -53,36 +62,53 @@ graph TD
    ```swift
    import SwiftUI
 
+   /// A view component that displays a single chat message as a bubble
+   /// with different styling based on whether it's from the user or AI
    struct MessageBubble: View {
+       /// The message data to be displayed in the bubble
        let message: Message
        
        var body: some View {
            HStack {
                if message.isFromUser {
+                   // User messages are aligned to the right with blue background
                    Spacer()
                    messageContent
                        .background(Color.blue, in: RoundedRectangle(cornerRadius: 15))
+                       .shadow(radius: 1)
                        .foregroundColor(.white)
                } else {
-                   messageContent
-                       .background(Color.gray, in: RoundedRectangle(cornerRadius: 15))
-                       .foregroundColor(.white)
-                   Spacer()
+                   VStack {
+                       HStack {
+                           Image(systemName: "person.circle.fill")
+                               .font(.largeTitle)
+                               .foregroundStyle(.blue)
+                               .padding(.leading, 6)
+                           Spacer()
+                       }
+                       messageContent
+                           // set to primary color for better contrast
+                           .foregroundColor(.primary)
+                   }
                }
            }
        }
        
+       /// The content view for the message bubble
+       /// Contains the message text and timestamp
        private var messageContent: some View {
            VStack(alignment: .leading, spacing: 4) {
+               // Message content text
                Text(message.content)
                    .padding(.horizontal, 12)
                    .padding(.vertical, 8)
+               // Timestamp displayed below the message
                Text(message.timestamp, style: .time)
                    .font(.caption)
+                   .foregroundColor(.secondary)
                    .padding(.horizontal, 12)
                    .padding(.bottom, 6)
            }
-           .frame(maxWidth: 280, alignment: .leading)
        }
    }
    ```
@@ -91,137 +117,201 @@ graph TD
    ```swift
    import SwiftUI
 
+   // Basic chat interface without API integration
    struct ChatView: View {
+       // Collection of messages in the current chat
        @State private var messages: [Message] = []
+       // Text content of the input field
        @State private var inputText = ""
+       // Controls keyboard focus state
+       @FocusState private var isFocused: Bool
        
        var body: some View {
-           VStack {
-               ScrollView {
-                   LazyVStack(spacing: 8) {
-                       ForEach(messages) { message in
-                           MessageBubble(message: message)
+           VStack(alignment: .leading) {
+               Text("SwiftChat")
+                   .font(.largeTitle.bold())
+                   .padding()
+               
+               ScrollViewReader { proxy in
+                   ScrollView {
+                       LazyVStack(spacing: 8) {
+                           ForEach(messages) { message in
+                               MessageBubble(message: message)
+                                   .id(message.id)
+                           }
+                       }
+                       .padding()
+                   }
+                   .onChange(of: messages) { _, newMessages in
+                       if let lastMessage = newMessages.last {
+                           withAnimation {
+                               proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                           }
                        }
                    }
-                   .padding()
+                   .onTapGesture {
+                       isFocused = false
+                   }
                }
                
                HStack {
-                   TextField("Type a message...", text: $inputText)
+                   TextField("Ask anything...", text: $inputText)
                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                       .focused($isFocused)
                    
                    Button(action: sendMessage) {
-                       Image(systemName: "paperplane.fill")
+                       Image(systemName: "paperplane.circle.fill")
                            .foregroundColor(inputText.isEmpty ? .gray : .blue)
+                           .font(.title)
                    }
                    .disabled(inputText.isEmpty)
                }
                .padding()
            }
-           .navigationTitle("Chat")
        }
        
        private func sendMessage() {
            guard !inputText.isEmpty else { return }
+           
            let message = Message(content: inputText, isFromUser: true)
            messages.append(message)
            inputText = ""
+           
+           // Simulate AI response (will be replaced with actual API call)
+           DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+               let response = Message(content: "This is a test response", isFromUser: false)
+               messages.append(response)
+           }
        }
    }
    ```
 
-## Day 2: API Integration and Core Functionality
+## Day 2: API Integration and Settings
 
-### Morning Session: Integrating the OpenRouter Service
-1. Add the provided OpenRouterService.swift file to your project
+### Morning Session: API Integration and Testing
+1. Add OpenRouterService.swift to the project
+
 2. Update ChatView with API Integration
    ```swift
+   import SwiftUI
+
+   // A view that displays a chat interface for interacting with an AI assistant.
+   // This view handles:
+   // - Message display in a scrollable view
+   // - Text input and sending
+   // - Keyboard management with gesture-based dismissal
+   // - Auto-scrolling to new messages
+
+   // Background gradient for the chat interface
+   let homeBackground: [Color] = [
+       .backgroundTop,
+       .backgroundBottom
+   ]
+
    struct ChatView: View {
-       // Service to handle AI chat functionality
+       // MARK: - Properties
+       
+       /// Service for making API calls to OpenRouter
+       /// Manages API communication and maintains state across view updates
        @StateObject private var apiService = OpenRouterService()
        
-       // Array to store all messages in the conversation
+       /// Collection of messages in the current chat
+       /// Stores both user and AI messages in chronological order
        @State private var messages: [Message] = []
        
-       // Text entered by the user in the input field
+       /// Text content of the input field
        @State private var inputText = ""
        
-       // Shows when we're waiting for AI response
+       /// Controls keyboard focus state
+       @FocusState private var isFocused: Bool
+       
+       /// Flag indicating if a message is currently being processed
        @State private var isLoading = false
        
-       // Stores the API key persistently using UserDefaults
+       /// API key stored in app storage for persistence
        @AppStorage("openrouter_api_key") private var apiKey: String = ""
        
        var body: some View {
-           VStack {
-               // Scrollable area for messages
-               ScrollView {
-                   // Load messages as they become visible
-                   LazyVStack(spacing: 8) {
-                       ForEach(messages) { message in
-                           MessageBubble(message: message)
+           VStack(alignment: .leading) {
+               Text("SwiftChat")
+                   .font(.largeTitle.bold())
+                   .padding()
+               
+               ScrollViewReader { proxy in
+                   ScrollView {
+                       LazyVStack(spacing: 8) {
+                           ForEach(messages) { message in
+                               MessageBubble(message: message)
+                                   .id(message.id)
+                           }
+                       }
+                       .padding()
+                   }
+                   .onChange(of: messages) { _, newMessages in
+                       if let lastMessage = newMessages.last {
+                           withAnimation {
+                               proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                           }
                        }
                    }
-                   .padding()
+                   .onTapGesture {
+                       isFocused = false
+                   }
                }
                
-               // Message input area
                HStack {
-                   // Text field for user input
-                   TextField("Type a message...", text: $inputText)
+                   TextField("Ask anything...", text: $inputText)
                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                       .focused($isFocused)
                    
-                   // Send button - changes color based on state
                    Button(action: sendMessage) {
-                       Image(systemName: "paperplane.fill")
+                       Image(systemName: "paperplane.circle.fill")
                            .foregroundColor(inputText.isEmpty || isLoading ? .gray : .blue)
+                           .font(.title)
                    }
-                   // Disable button when there's no text or while loading
                    .disabled(inputText.isEmpty || isLoading)
                }
                .padding()
            }
-           .navigationTitle("Chat")
-           // Set the API key when the view appears
-           .onAppear { apiService.setAPIKey(apiKey) }
+           .onAppear {
+               apiService.setAPIKey(apiKey)
+           }
+           .onChange(of: apiKey) { _, newKey in
+               apiService.setAPIKey(newKey)
+           }
+           .background(Gradient(colors: homeBackground))
        }
        
+       /// Sends the user's message to the AI service and handles the response.
+       /// This method:
+       /// 1. Creates and adds the user's message
+       /// 2. Clears the input field
+       /// 3. Makes an async API call to get AI response
+       /// 4. Handles successful response by adding AI message
+       /// 5. Handles errors by displaying error message
        private func sendMessage() {
-           // Check if we have text to send
-           if inputText.isEmpty {
-               return
-           }
+           if inputText.isEmpty { return }
            
-           // Create and show the user's message
            let userMessage = Message(content: inputText, isFromUser: true)
            messages.append(userMessage)
            
-           // Store message text and clear input field
            let messageText = inputText
            inputText = ""
-           
-           // Show loading indicator while waiting for AI
            isLoading = true
            
-           // Create a new background task to send message to AI
            Task {
                do {
-                   // Send message to AI and wait for response
                    let response = try await apiService.sendMessage(messageText)
-                   
-                   // Create message from AI's response
                    let aiMessage = Message(content: response, isFromUser: false)
                    
-                   // Update the UI on the main thread
                    await MainActor.run {
                        messages.append(aiMessage)
                        isLoading = false
                    }
                } catch {
-                   // If there's an error, show it in the chat
                    await MainActor.run {
                        let errorMessage = Message(
-                           content: "Error: \(error.localizedDescription)",
+                           content: "Error: \(error.localizedDescription)", 
                            isFromUser: false
                        )
                        messages.append(errorMessage)
@@ -231,11 +321,9 @@ graph TD
            }
        }
    }
-   
    ```
 
-### Afternoon Session: Settings View
-1. Create SettingsView
+3. Create SettingsView
    ```swift
    import SwiftUI
 

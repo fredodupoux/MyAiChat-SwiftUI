@@ -22,15 +22,22 @@ struct SettingsView: View {
                     .disabled(tempApiKey.isEmpty)
                 }
                 
-                Section(header: Text("About")) {
+                Section(header: Text("About this app")) {
                     HStack {
                         Text("Version")
                         Spacer()
                         Text("1.0.0")
                             .foregroundColor(.secondary)
                     }
+                    HStack {
+                        Text("Author")
                     
-                    Link("OpenRouter Website", 
+                        Spacer()
+                        Text("Frederic Dupoux")
+                            .foregroundColor(.secondary)
+                    }
+                        
+                    Link("Get your API key at OpenRouter.io",
                          destination: URL(string: "https://openrouter.ai")!)
                 }
             }

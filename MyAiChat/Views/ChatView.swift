@@ -40,20 +40,10 @@ struct ChatView: View {
     
     // MARK: - Body
     var body: some View {
-        ZStack {
-            // Background color for the chat view
-            LinearGradient(
-                    gradient: Gradient(colors: homeBackground),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .edgesIgnoringSafeArea(.all)
-            
-            // Main chat content
-            
+         // Main chat content
         VStack (alignment: .leading) {
             // Title for the chat view
-            Text("My AI Chat")
+            Text("SwiftChat")
                 .font(.largeTitle .bold())
                 .padding()
             // Messages area with ScrollViewReader for automatic scrolling to new messages
@@ -63,6 +53,18 @@ struct ChatView: View {
                         ForEach(messages) { message in
                             MessageBubble(message: message)
                                 .id(message.id)
+                        }
+                        
+                        // Show loading indicator when waiting for AI response
+                        if isLoading {
+                            HStack {
+                                Text("AI is thinking...")
+                                    .foregroundColor(.gray)
+                                    .italic()
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                            .id("loading")
                         }
                     }
                     .padding()
@@ -75,6 +77,14 @@ struct ChatView: View {
                         }
                     }
                 }
+                // Auto-scroll to loading indicator when loading starts
+                .onChange(of: isLoading) { oldValue, newValue in
+                    if newValue {
+                        withAnimation {
+                            proxy.scrollTo("loading", anchor: .bottom)
+                        }
+                    }
+                }
                 // Dismiss keyboard when tapping the messages area
                 .onTapGesture {
                     isFocused = false
@@ -84,17 +94,19 @@ struct ChatView: View {
             
             // Input Area - text field with keyboard focus management and send button
             HStack {
-                TextField("Type or ask anything...", text: $inputText)
+                TextField("Ask anything...", text: $inputText)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .focused($isFocused)
                 
                 Button(action: sendMessage) {
                     if (inputText.isEmpty || isLoading) {
-                        Image(systemName: "paperplane.fill")
+                        Image(systemName: "paperplane.circle.fill")
                             .foregroundColor(.gray)
-                    } else {
-                        Image(systemName: "paperplane.fill")
+                            .font(.title)
+                    }  else {
+                        Image(systemName: "paperplane.circle.fill")
                             .foregroundColor(.blue)
+                            .font(.title)
                     }
                 }
                 // Disable send button when input is empty or still waiting for response
@@ -112,7 +124,7 @@ struct ChatView: View {
         .onChange(of: apiKey) { oldKey, newKey in
             apiService.setAPIKey(newKey)
         }
-     }
+        .background(Gradient(colors: homeBackground))
     } 
     // MARK: - Methods
     
@@ -124,8 +136,9 @@ struct ChatView: View {
     // 4. Handles successful response by adding AI message
     // 5. Handles errors by displaying error message
     private func sendMessage() {
+
         // Return early if there's no message to send
-        guard !inputText.isEmpty else { return }
+        if inputText.isEmpty { return }
         
         // Create and add user message to the conversation
         let userMessage = Message(content: inputText, isFromUser: true)
@@ -139,8 +152,11 @@ struct ChatView: View {
         // Make asynchronous API call
         Task {
             do {
-                // Send message to AI service and wait for response
-                let response = try await apiService.sendMessage(messageText)
+                // Convert messages to simple format for the API service
+                let conversationHistory = messages.map { (content: $0.content, isFromUser: $0.isFromUser) }
+                
+                // Send message to AI service with conversation history and wait for response
+                let response = try await apiService.sendMessage(messageText, conversationHistory: conversationHistory)
                 let aiMessage = Message(content: response, isFromUser: false)
                 
                 // Update UI on the main thread

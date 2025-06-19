@@ -38,6 +38,7 @@ Today we'll build the foundation of our AI chat app
 struct Message {
     let content: String
     let isFromUser: Bool
+    let timestamp: Date
 }
 ```
 
